@@ -1,0 +1,111 @@
+/*Для сторінок народних депутатів та законопоректів*/
+.info_box_with_border {
+  clear:both;
+  background:#fff;
+  border:1px solid #c8c8c8;
+  padding:1em 20px 0 20px;
+  margin:0 0 1px 0;
+  height:1%;-webkit-border-radius: 2px;-moz-border-radius: 2px;border-radius: 2px;
+}
+.info_box_with_border:after { 
+  display:block; 
+  visibility:hidden; 
+  clear:both; 
+  height:0; 
+  content: ""; 
+ }
+ 
+.info_box {
+  clear:both;
+  background:#fff;
+/*  border:1px solid #c8c8c8; */
+  padding:1em 20px 0 20px;
+  margin:0 0 1px 0;
+  height:1%;-webkit-border-radius: 2px;-moz-border-radius: 2px;border-radius: 2px;
+}
+
+.info_box:after { 
+  display:block; 
+  visibility:hidden; 
+  clear:both; 
+  height:0; 
+  content: ""; 
+ }
+ 
+.info_box h2 {font-size:1.5em;font-weight:normal;color:#666;margin:0 0 0.6em 0;clear:left;}
+.info_box p  {margin:0 0 1em 0;line-height:1.5;}
+ 
+.col-quart {width:25%;margin:0;float:left;display: inline;}
+.col-half {width:48%;margin:0 4% 0 0;float:left;display:inline;}
+.col-third {width:32%;margin:0 2% 0 0;float:left;display:inline;}
+.col-twothirds {width:66%;margin:0 2% 0 0;float:left;display: inline;}
+.col-last {margin:0;}
+
+ul.links {padding:0;list-style:none;}
+ul.links li {padding-left:8px;background:url(/img/bullet-links.png) no-repeat left 4px;margin:0 0 2px 0;}
+
+.text-input {padding:3px 5px;width:150px;border:0;margin:0 10px 0 0;color:#444;}
+
+p.top_msg  {font-size:1.1em;font-weight:bold;margin:0 0 0.6em 0;clear:left;padding:2px;background-color:#E7F4FD;}
+
+p a.page_top {font-size:0.8em; font-style:italic; float:right;}
+
+.search-filter-results {
+  list-style: none;
+  padding:0;
+  }
+  
+.search-filter-results li {
+  border-bottom:1px solid #e8e8e8;
+  padding:10px 0;
+  position: relative;
+  }
+
+.search-filter-results li .title {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin:0 0 5px 0;
+  padding-right:90px
+  }
+
+dl  {margin:0 0 1em 0;line-height:1.5;}
+dl {width:100%;float:left;display:inline;}
+dl dt {float:left;display:inline;clear:left;width:30%;}
+dl dd {margin-left:35%;margin-bottom:3px;}
+
+.search-filter-results li dl {float:none;/* font-size: 0.9em; */}
+.search-filter-results li dl dt {width:140px;text-transform: uppercase;font-weight: bold;color:#666;}
+.search-filter-results li dl dd {margin-left:150px;}  
+
+.mp-general-info dl {float:none;/* font-size: 0.9em; */}
+.mp-general-info dl dt {width:330px;text-transform: uppercase;font-weight: bold;color:#666;text-align: right }
+.mp-general-info dl dd {margin-left:360px;text-align: left }  
+
+ /* -- по законопроектах -- */
+ .zp-info {padding-bottom:15px;}
+ 
+.zp-info dl {float:none;/* font-size: 0.9em; */}
+.zp-info dl dt {width:250px;font-weight: bold;color:#666;padding-bottom:3px;}
+.zp-info dl dd {margin-left:270px;padding-bottom:3px;} 
+
+.zp-info dl dd li {list-style-type: none;}
+.zp-info dl dd li.inline_list {padding-bottom:3px; display:inline;}
+ 
+.search-filter-results-thumbnails li {
+  position: relative;
+  padding-left:100px;
+  margin:0 0 15px 0;
+  min-height:120px;
+  }
+
+.search-filter-results-thumbnails li .thumbnail {
+  position: absolute;
+  top:15px;left:0;
+ }
+ 
+ .search-filter-results-thumbnails li .thumbnail img {
+ border-radius: 8px;
+ }
+
+.ker_list ul li {margin-left: 12px; list-style-type:none;}
+}

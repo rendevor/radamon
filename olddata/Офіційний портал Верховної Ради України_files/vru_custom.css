@@ -1,0 +1,429 @@
+table.simple_info {
+	font-size: inherit;
+	line-height: inherit;
+	}
+
+TABLE.Otable TD {
+   border-bottom : 1px solid #3778BC
+   text-align: left;
+}
+
+.TROW_01 {
+   background-color: #EFEFF1
+}
+.TROW_02 {
+   background-color: #B9CDE2
+}
+              
+table.tab_f {
+    border-spacing: 1px;
+}
+
+TABLE.Otable TD {
+    border-bottom: 1px solid #3778BC;
+}
+TABLE.Otable2 TD {
+    border-bottom: 2px solid #3778BC;
+    border-right: 2px solid #3778BC;
+}
+TABLE.Otable2_1 TD {
+    border-bottom: 1px solid #3778BC;
+    border-right: 1px solid #3778BC;
+}
+TABLE.Otable2_2 TD {
+    border-color: #CFE0F1 #3778BC #3778BC #CFE0F1;
+    border-right: 2px solid #3778BC;
+    border-style: solid;
+    border-width: 1px;
+    padding-right: 3px;
+}
+TABLE.Otable3 TD {
+    border-right: 1px solid #3778BC;
+}
+
+.THEAD {
+    background-color: #B9CDE2;
+    border-bottom: 1px solid #3778BC;
+    border-top: 1px solid #3778BC;
+    padding-left: 5px;
+    padding-right: 5px;
+
+}
+.THEAD0 {
+    background-color: #B9CDE2;
+    border-bottom: 1px solid #3778BC;
+    border-left: 1px solid #FFFFFF;
+    color: #002E5B;
+    border-right:1px solid #FFFFFF;
+}
+.THEAD00 {
+    background-color: #B9CDE2;
+    border-bottom: 1px solid #3778BC;
+    border-top: 1px solid #3778BC;
+}
+.THEAD01 {
+    background-color: #B9CDE2;
+    border-bottom: 1px solid #3778BC;
+    padding-left: 5px;
+}
+.THEAD02 {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #FFFFFF;
+    border-top: 1px solid #FFFFFF;
+}
+.THEAD1 {
+    background-color: #EFEFF1;
+    border-bottom: 1px solid #3778BC;
+    border-top: 1px solid #3778BC;
+}
+.THEAD2 {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #3778BC;
+}
+.THEAD20 {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #3778BC;
+    border-left: 1px solid #FFFFFF;
+}
+.THEAD21 {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #D6E1ED;
+    border-left: 1px solid #FFFFFF;
+    border-right: 1px solid #FFFFFF;
+}
+.THEAD22 {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #3778BC;
+    border-left: 1px solid #FFFFFF;
+    border-top: 1px solid #FFFFFF;
+}
+.THEAD3 {
+    background-color: #F1F5F9;
+    border-bottom: 1px solid #D6E1ED;
+    /*border-bottom: 1px solid #3778BC;*/
+    background-color: #F1F5F9;
+    padding-left: 10px;
+
+}
+.THEAD30 {
+    background-color: #F1F5F9;
+    border-bottom: 1px solid #3778BC;
+    border-top: 1px solid #3778BC;
+}
+.THEAD10 {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #3778BC;
+    border-top: 1px solid #3778BC;
+}
+.THEAD33 {
+    background-color: #F1F5F9;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+.THEAD32 {
+    border-bottom: 1px solid #D6E1ED;
+  	background-color: #F1F5F9
+}
+
+table.THEAD10 tr td:first-child {
+    padding: 4px 4px 4px 5px;
+}
+
+table.THEAD10 tr:first-child td.THEAD00 {
+    border-top: 0;
+}
+table.THEAD10 tr:1th-child td.THEAD00 {
+    border-top: 0;
+}
+table.THEAD10 tr:last-child td.THEAD00 {
+    border-bottom: 0;
+}
+
+.THEAD02 td {
+    padding: 5px;
+}
+
+/*              
+              .topTitle_row01, .topTitle_row01 b {
+              	font-family: Verdana, Arial, Helvetica, sans-serif;
+              	font-size: 8pt;
+              	font-weight: bold;
+              	color: #1461AF;
+              	background-color: #EFEFF1;
+              }
+              .topTitle_row01 a, .topTitle_row01 a:link, .topTitle_row01 a:visited {
+              	font-weight: bold;
+              	color: #1461AF;
+              	text-decoration: none;
+                }
+              .topTitle_row01 a:hover {
+              	text-decoration: underline;
+              }
+*/              
+.topTitle {
+    color: #1461AF;
+    font-weight: normal;
+}
+
+.topTitle a:hover {
+    text-decoration: underline;
+}
+
+.hr {
+    background: url("/img/dots.png") repeat-x scroll 50% 40% transparent;
+    clear: both;
+    display: block;
+	padding: 10px 0 3px;
+}
+
+#PlsqlBody {
+    margin: 0 14px 10px;
+
+    padding-bottom:71px;   /* Высота футера + 10 px*/
+}
+/*
+#content-all {
+    margin: 0 9px 10px;
+
+    padding-bottom:71px;    --Высота футера + 10 px
+}
+*/
+
+#content-all .Centered{
+    margin: auto;
+}
+
+#content-all div.white3-panel1 h3{
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+
+#content-all .panel {
+    margin: 0;
+}
+
+#content-all[class=WithFolowingBlocks] {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+            
+#footer {
+bottom: 0;
+position: absolute;
+}
+
+#PlsqlBody .Centered{
+    margin: auto;
+}
+
+#PlsqlBody div.white3-panel1 h3{
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+#PlsqlBody #MainContainer {
+    overflow: hidden;
+    padding-bottom: 64px;
+}
+
+.feedback form input {
+	height: auto !important;
+    width: auto !important;
+    margin-top: 4px;
+}
+/*
+.feedback form select {
+	height: 22px;
+	padding: 0 6px 2px;
+	border: 1px solid #A1BDD1;
+	font-size: 12px;
+	line-height: 12px;
+}
+*/
+	
+.feedback input[type="checkbox"], input[type="radio"] {
+    width: 20px !important;
+	border: 0 !important;
+}
+
+
+.CalendarIcon IMG  {
+    padding-top: 0;
+    padding-bottom: 0;
+    vertical-align: text-top;
+}
+
+ul.level1 {
+    padding-left: 17px;
+}
+.TextCentered{
+    text-align: center;
+}
+
+.table_1 td {
+padding-top: 5px;
+vertical-align: text-top;
+}
+
+
+a.RightFloated {
+    float: right;
+    margin: 0 4px 5px 0;
+}
+
+
+.screenwide {
+    padding-bottom: 0px;
+}
+
+.THEAD21 img[height="14"] {
+    height: 14px;
+}
+
+.photo-head-link {
+    text-align: right;
+}
+
+/* Для оформлення інформації про керівництво ВР */
+
+.person  {
+  width: 98%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #EFEFF1; 
+  clear:both;  
+  float: left;
+}
+
+.ker_info  {
+  width: 700px;
+  float: left;
+  
+}
+
+.ker_photo  {
+  width: 150px;
+  float: left;  
+}
+
+.info_pers {
+ margin-bottom: 20px;
+ font-weight: bold;
+}
+
+.info_secr {
+ margin-top: 10px;
+ }
+
+li.contact {
+  margin-left: 20px;
+}
+
+
+/* Для оформления таблиц в стиле нового дизайна нового портала*/
+table.striped {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+table.striped th {
+	height:40px;
+	color: #fff;
+/*	background: rgb(32, 125, 195) url(http://iportal.rada.gov.ua/img/sprite-x.png) repeat-x 0 0; */
+	background-color: rgb(32, 125, 195);
+    border-bottom: 1px solid #3778BC;
+    border-top: 1px solid #3778BC;	
+	font-size: 13px;
+    font-weight: bold;
+	vertical-align: middle;
+}
+
+table.striped td {
+	padding-top: 5px;
+	font-size: 12px;
+	vertical-align: text-top;
+}
+
+table.striped th a {
+	color: #fff;
+	text-decoration: none;
+}
+
+
+table.striped  a{
+	font-weight: normal;
+	text-decoration: none;
+}
+
+table.striped  a:hover{
+	text-decoration: underline;
+}
+
+/* нечетная строка таблицы класса table_strypy */
+table.striped tr:nth-child(2n+1){
+  background: #E8F5FE; 
+}
+
+/* четная строка таблицы класса table_strypy */
+table.striped tr:nth-child(2n){
+}
+
+/* btnblock - блок кнопок*/
+.btnblock {
+    padding-top: 15px;  
+	text-align: center;
+}
+
+
+.longbtn {
+    width: 250px;
+    height: 20px;
+	display: inline-block;
+	margin: 3px 0 0;
+    background: url("http://iportal.rada.gov.ua/img/sprite-x.png") repeat-x scroll 0 -8px transparent;
+    border: medium none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: center;
+    text-decoration: none;
+	padding-top: 3px; 
+}
+
+.shortbtn {
+    width: 80px;
+    height: 20px;
+	display: inline-block;
+	margin: 3px 0 0;
+    background: url("http://iportal.rada.gov.ua/img/sprite-x.png") repeat-x scroll 0 -8px transparent;
+    border: medium none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: center;
+    text-decoration: none;
+	padding-top: 5px; 
+}
+
+/* params_selector - блок из текста и форм-селекта для изменения одного параметра*/ 
+
+.params_selector {
+  float: right;
+  padding-bottom: 5px;   
+}
+
+.params_selector span{
+  display: inline-block;
+  padding-right: 3px;
+}
+
+.params_selector form{
+  display: inline-block;
+ }
+ 
+ /*Для дисейблення табов в межпарламентских страницах*/
+  .ui-state-disabled {  
+  opacity: .45; 
+  filter:Alpha(Opacity=45); 
+  background-image: none; 
+  }
