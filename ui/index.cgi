@@ -3,6 +3,10 @@
 use Mojolicious::Lite;
 use DBI;
 use List::MoreUtils qw (uniq);
+use common::sense;
+use Encode;
+use utf8;
+use encoding 'utf8';
 
 
 my $g_dsn='DBI:mysql:rada_analys:localhost';
