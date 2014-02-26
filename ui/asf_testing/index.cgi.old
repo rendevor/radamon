@@ -1,0 +1,1137 @@
+#!D:/Dispatcher/Perl/bin/perl.exe
+use Mojolicious::Lite;
+use DBI;
+use List::MoreUtils qw(uniq);
+
+
+
+my $g_dsn='DBI:mysql:reports_devel:localhost';
+my $g_db_user_name = 'reports_devel';
+my $g_db_password = 'RoawivUjco';
+my $dbh=DBI->connect($g_dsn, $g_db_user_name, $g_db_password);
+
+
+sub db_usage_find_packages {
+
+	my $sth=$dbh->prepare("select package from testsuites where deleted = 0 group by package");
+	$sth->execute;
+	my $packages = $sth->fetchall_arrayref();
+	$sth->finish;
+	return $packages;
+}
+
+sub db_usage_find_testsuites {
+	my $name = $_[0];
+	$name = $name || '%';
+	my $sth=$dbh->prepare("SELECT `ts`.`name` FROM `testsuites` ts WHERE `ts`.`deleted` = 0 AND `ts`.`package` LIKE ? GROUP BY `ts`.`name`");
+	$sth->execute($name);
+	my $packages = $sth->fetchall_arrayref();
+	$sth->finish;
+	return $packages;
+
+}
+
+sub db_usage_find_dates {
+
+	my $sth=$dbh->prepare("select DATE(min(`date`)), DATE(max(`date`)) from runs where `deleted` = ?");
+	$sth->execute(0);
+	my @dates;
+	push @dates, $sth->fetchrow_array;
+	$sth->finish;
+	return \@dates;
+}
+
+sub db_usage_get_testcases {
+	my $package = $_[0];
+	my $startdate = $_[1];
+	my $enddate = $_[2];
+	my $testsuite = $_[3];
+	my $buildname = $_[4];
+	my $result;
+	my $sth;
+	my $query = "SELECT `ts`.`name` AS ts_name, `tc`.`name` AS tc_name, `f`.`type` AS tc_f_type,  `f`.`message` AS tc_f_message, uncompress(`f`.`cdata`),  AS tc_f_cdata , `r`.`date` AS r_date, `r`.`buildname`
+								AS r_buildname
+								FROM testsuites ts INNER JOIN testcases tc ON `tc`.`id_testsuites`= `ts`.`id` LEFT JOIN failures f ON `f`.`testcases_id`=`tc`.`id` INNER JOIN runs r ON `r`.`id` = `ts`.`runs_id`
+								WHERE ";
+	my @req;
+
+	$query .= " `ts`.`package` = ? AND (DATE(`r`.`date`) BETWEEN ? AND ?) ";
+	push @req, $package;
+	push @req, $startdate;
+	push @req, $enddate;
+	if ($testsuite ne "") {
+
+		$query .= " AND `ts`.`name` = ? ";
+		push @req, $testsuite;
+	}
+	
+	if ($buildname ne "") {
+		$query .= " AND `r`.`buildname` = ? ";
+		push @req, $buildname;
+	}
+
+	$sth=$dbh->prepare($query);
+	$sth->execute(@req);
+	while (my @line = $sth->fetchrow_array()) {
+		push @{$result->{$line[0]}}, { tc_name => $line[1], f_type => $line[2] || '-',  f_message => $line[3] || '-', f_cdata => $line[4] || '-', r_date => $line[5], r_buildname => $line[6] || '-'}
+	}
+	$sth->finish;
+	return $result;
+}
+
+sub db_usage_top_report {
+	my $package = $_[0];
+	my $startdate = $_[1];
+	my $enddate = $_[2];
+	my $testsuite = $_[3];
+	my $buildname = $_[4];
+	my $simple = $_[5];
+	my @result;
+	my @temp;
+	my $sth;
+	my @req;
+	my @tmp;
+
+
+	my $query = "SELECT maxid.package, rs.buildname, rs.date, count(`tc`.`name`), count(`f`.`type`), sum(`tc`.`time`) FROM runs rs INNER JOIN (
+					SELECT MAX(runs_id) AS max_run_id, package FROM testsuites ts INNER JOIN runs r ON r.id = ts.runs_id WHERE r.deleted != 1 GROUP BY package
+					) AS maxid ON rs.id = maxid.max_run_id 
+					INNER JOIN testsuites ts ON `rs`.`id` = `ts`.`runs_id` 
+					INNER JOIN testcases tc ON `tc`.`id_testsuites` = `ts`.`id`
+					LEFT JOIN failures f ON `f`.`testcases_id`= `tc`.`id`
+					GROUP BY `rs`.`buildname` ORDER BY `rs`.`date` ";
+
+	$sth=$dbh->prepare($query);
+	$sth->execute();
+	
+	while (my @line = $sth->fetchrow_array()) {
+		$line[0] = $line[0] || '-';
+		$line[1] = $line[1] || '-';
+		if ($line[2] =~ /(\d{4}-\d{2}-\d{2})/) {
+			$line[2] = $1 || '-';
+		}
+		$line[3] = $line[3] || '-';
+		$line[4] = $line[4] || '-';
+		$line[5] = $line[5] || '-';
+		push @result, @line;
+	}
+	$sth->finish;
+	return \@result;
+}
+
+# Get amount testcases, total failures, total time and calc success rate.
+sub db_usage_get_shortreport {
+	my $package = $_[0];
+	my $startdate = $_[1];
+	my $enddate = $_[2];
+	my $testsuite = $_[3];
+	my $buildname = $_[4];
+	my $simple = $_[5];
+	my @result;
+	my @temp;
+	my $sth;
+	my @req;
+
+	my $query = "SELECT `r`.`buildname`, `r`.`date`, count(`tc`.`name`),  count(`f`.`type`), sum(`tc`.`time`) FROM testcases tc INNER JOIN testsuites ts ON `tc`.`id_testsuites` = `ts`.`id`
+					INNER JOIN runs r ON `r`.`id` = `ts`.`runs_id` LEFT JOIN failures f ON `f`.`testcases_id`= `tc`.`id` WHERE ";
+
+#SELECT `r`.`buildname`, `r`.`id`, `r`.`date`, count(`tc`.`name`), sum(`tc`.`time`), count(`f`.`type`) FROM 
+# testcases tc INNER JOIN testsuites ts ON `tc`.`id_testsuites` = `ts`.`id` INNER JOIN runs r ON `r`.`id` = `ts`.`runs_id` 
+# LEFT JOIN failures f ON `f`.`testcases_id`= `tc`.`id` WHERE (DATE(`r`.`date`) BETWEEN '2012-09-04' AND '2012-09-17') AND `r`.`deleted` != 1 group by 1 Order by 3
+					
+	if ($package ne "") {
+		$query .= " `ts`.`package` = ? AND ";
+		push @req, $package;
+	}
+	if ($testsuite ne "") {
+		$query .= " `ts`.`name` = ? AND ";
+		push @req, $testsuite;
+	}
+	if ($buildname ne "") {
+		$query .= " `r`.`buildname` = ? AND ";
+		push @req, $buildname;
+	}
+	if ($simple == 1) {
+		$query .= " `r`.`deleted` != 1  GROUP BY `r`.`buildname` ORDER BY `r`.`date`, `r`.`buildname` DESC LIMIT 10";
+	} else {
+		$query .= " (DATE(`r`.`date`) BETWEEN ? AND ?) AND `r`.`deleted` != 1  GROUP BY `r`.`buildname` ORDER BY `r`.`date`";
+		push @req, $startdate;
+		push @req, $enddate;
+	}
+	
+	$sth=$dbh->prepare($query);
+	$sth->execute(@req);
+	while (my @line = $sth->fetchrow_array()) {
+		#my $date;
+		$line[0] = $line[0] || '-';
+		if ($line[1] =~ /(\d{4}-\d{2}-\d{2})/) {
+			$line[1] = $1 || '-';
+		}
+		$line[2] = $line[2] || '-';
+		$line[3] = $line[3] || '-';
+		$line[4] = $line[4] || '-';
+		
+		push @result, @line;
+		#push @{$result->{$line[0]}}, { r_date => $date, count_tc => $line[2] || '-', sum_time => $line[3] || '-', count_f => $line[4] }
+	}
+	$sth->finish;
+# SELECT count testcases.
+	# my $query = "SELECT count(`tc`.`name`)
+							# FROM testcases tc INNER JOIN testsuites ts ON `tc`.`id_testsuites`= `ts`.`id` INNER JOIN runs r ON `r`.`id` = `ts`.`runs_id`
+							# WHERE ";
+	# if ($package ne "") {
+		# $query .= " `ts`.`package` = ? AND ";
+		# push @req, $package;
+	# }
+	# if ($testsuite ne "") {
+		# $query .= " `ts`.`name` = ? AND ";
+		# push @req, $testsuite;
+	# }
+	# $query .= " (DATE(`r`.`date`) BETWEEN ? AND ?) ";
+	# push @req, $startdate;
+	# push @req, $enddate;
+	# $sth=$dbh->prepare($query);
+	# $sth->execute(@req);
+	# @temp = $sth->fetchrow_array();
+	# my $testcases_count = $temp[0];
+	# $sth->finish;
+	# @req = ();
+##Select total time execution of those testcases
+	# $query = "SELECT sum(`tc`.`time`) FROM testcases tc INNER JOIN testsuites ts ON `tc`.`id_testsuites`= `ts`.`id` INNER JOIN runs r ON `r`.`id` = `ts`.`runs_id` WHERE ";
+	# if ($package ne "") {
+		# $query .= " `ts`.`package` = ? AND ";
+		# push @req, $package;
+	# }
+	# if ($testsuite ne "") {
+		# $query .= " `ts`.`name` = ? AND ";
+		# push @req, $testsuite;
+	# }
+	
+
+	# $query .= " (DATE(`r`.`date`) BETWEEN ? AND ? ) ";
+	# push @req, $startdate;
+	# push @req, $enddate;
+	# $sth=$dbh->prepare($query);
+	# $sth->execute(@req);
+	# @temp = $sth->fetchrow_array();
+	# my $testcases_time = $temp[0];
+	# $sth->finish;
+	# @req = ();
+
+##Select count failures of those testcases
+	# $query = "SELECT count(`f`.`type`) FROM failures f LEFT JOIN testcases tc ON `f`.`testcases_id`= `tc`.`id` INNER JOIN testsuites ts ON `tc`.`id_testsuites`= `ts`.`id` INNER JOIN runs r ON `r`.`id` = `ts`.`runs_id` WHERE ";
+	# if ($package ne "") {
+		# $query .= " `ts`.`package` = ? AND ";
+		# push @req, $package;
+	# }
+	# if ($testsuite ne "") {
+		# $query .= " `ts`.`name` = ? AND ";
+		# push @req, $testsuite;
+	# }
+	# $query .= " (DATE(`r`.`date`) BETWEEN ? AND ? ) ";
+	# push @req, $startdate;
+	# push @req, $enddate;
+	# $sth=$dbh->prepare($query);
+	# $sth->execute(@req);
+	# @temp = $sth->fetchrow_array();
+	# my $failures_count = $temp[0];
+	# $sth->finish;
+	# @req = ();
+
+
+	# push @{$result}, $testcases_count;
+	# push @{$result}, $testcases_time;
+	# push @{$result}, $failures_count;
+	return \@result;
+}
+
+sub db_usage_get_errorsreport {
+	my $package = $_[0];
+	my $startdate = $_[1];
+	my $enddate = $_[2];
+	my $testsuite = $_[3];
+	my $buildname = $_[4];
+	my $result;
+	my @temp;
+	my $sth;
+	my @q;
+	my $query = "SELECT `ts`.`name` AS ts_name, `tc`.`name` AS tc_name, `f`.`type` AS tc_f_type,  `f`.`message` AS tc_f_message, uncompress(`f`.`cdata`) AS tc_f_cdata,
+					`r`.`date` AS r_date, `r`.`buildname` AS r_buildname
+								FROM testsuites ts INNER JOIN testcases tc ON `tc`.`id_testsuites`= `ts`.`id` LEFT JOIN failures f ON `f`.`testcases_id`=`tc`.`id` INNER JOIN runs r ON `r`.`id` = `ts`.`runs_id`
+								WHERE ";
+	if ($package ne '') {
+		$query .= " `ts`.`package` = ? AND ";
+		push @q, $package;
+	}
+	if ($testsuite ne "") {
+		$query .= " `ts`.`name` = ? AND ";
+		push @q, $testsuite;
+	}
+	if ($buildname ne "") {
+		$query .= " `r`.`buildname` = ? AND ";
+		push @q, $buildname;
+	
+	}
+	$query .= " (DATE(`r`.`date`) BETWEEN ? AND ? )"; # AND `f`.`type` IS NOT NULL";
+	push @q, $startdate;
+	push @q, $enddate;
+	$sth=$dbh->prepare($query);
+	$sth->execute(@q);
+
+
+	while (my @line = $sth->fetchrow_array()) {
+#		foreach my $look_pre ($line[4]) {
+#			$look_pre =~ s/<pre>//;
+#			$look_pre =~ s/<\/pre>//;
+#		}
+		my $date;
+		if ($line[5] =~ /(\d{4}-\d{2}-\d{2})/) {
+			$date = $1;
+		}
+		push @{$result->{$line[0]}}, { tc_name => $line[1], f_type => $line[2] || '',  f_message => $line[3] || '-', f_cdata => $line[4] || '-',
+					r_date => $date, r_buildname => $line[6] };
+	}
+	$sth->finish;
+
+	return $result;
+}
+
+sub db_usage_delete_buildnum {
+	my $package = $_[0];
+	my $startdate = $_[1];
+	my $enddate = $_[2];
+	my $testsuite = $_[3];
+	my $buildname = $_[4];
+	my $result;
+	my @temp;
+	my $sth;
+	my @q;
+	my $query = "UPDATE runs r SET `r`.`deleted`=? 
+								WHERE `r`.`buildname` = ? ";
+	push @q, "1";
+	push @q, $buildname;
+	$sth=$dbh->prepare($query);
+	$sth->execute(@q);
+
+	return $result;
+}
+
+
+get '/' => sub {
+	my $self = shift;
+	my @stash = ();
+	my $testsuite;
+	my $package;
+	my $failure;
+	my $enddate;
+	my $startdate;
+	my $report;
+	my $res;
+	my $reserr;
+	my $resshort;
+	my $errors_report;
+	my $buildname;
+	my $delete;
+	my $simple = 0;
+	my $topreport;
+	my $plotdata;
+	
+
+	$self->stash(title=>"Alstom ASF test framework");
+	$self->stash(content=>"Alstom ASF test framework");
+
+	$package = $self->param('package');
+	$testsuite = $self->param('testsuite');
+	$failure = $self->param('failure');
+	$enddate = $self->param('enddate');
+	$startdate = $self->param('startdate');
+	$report = $self->param('report');
+	$buildname = $self->param('buildname');
+	$delete = $self->param('delete');
+	
+	
+	if (($startdate eq '') && ($enddate eq '')) {
+		$simple = 1;
+	}
+	
+
+	
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+	$year+=1900;
+	$mon++;
+	($mon < 10) and $mon="0$mon";
+	($mday < 10) and $mday="0$mday";
+	
+	if ($enddate eq '') {
+		$enddate = "$year-$mon-$mday";
+	}
+	
+	if ($simple == 1) {
+		$mon = int $mon;
+		$mon--;
+		if ($mon < 1) {
+			$mon = 12;
+			$year = int $year;
+			$year--;
+		}
+	}
+	
+	($mon < 10) and $mon="0$mon";
+	($mday < 10) and $mday="0$mday";
+	
+	if ($startdate eq '') {
+		$startdate = "$year-$mon-$mday";
+	}
+	
+	
+	my $packages=db_usage_find_packages();
+	my $dates = db_usage_find_dates();
+	
+
+	$startdate = $startdate || $dates->[0];
+	$enddate = $enddate || $dates->[1];
+
+	my $testsuites = db_usage_find_testsuites($package);
+
+	if ($testsuite !~ /$package/) {
+		$testsuite = '';
+	}
+
+	if ($delete eq '1') {
+		db_usage_delete_buildnum($package, $startdate, $enddate, $testsuite, $buildname);
+		$buildname = '';
+		$delete = '0';
+	}
+
+	if ($simple == 1) {
+		$topreport = db_usage_top_report();
+		$plotdata = db_usage_get_plotdata($package, $startdate, $enddate, $testsuite, $buildname, $simple);
+	} else {
+		$resshort = db_usage_get_shortreport($package, $startdate, $enddate, $testsuite, $buildname, $simple);
+		$reserr = db_usage_get_errorsreport($package, $startdate, $enddate, $testsuite, $buildname);
+	}
+	
+	$self->stash(reserr=>$reserr);
+	$self->stash(pack=>$packages);
+	$self->stash(dates=>$dates);
+	$self->stash(testsuites=>$testsuites);
+	$self->stash(testsuite=>$testsuite);
+	$self->stash(package=>$package);
+	$self->stash(failure=>$failure);
+	$self->stash(enddate=>$enddate);
+	$self->stash(startdate=>$startdate);
+	$self->stash(resshort=>$resshort);
+	$self->stash(errors_report=>$errors_report);
+	$self->stash(report=>$report);
+	$self->stash(buildname=>$buildname);
+	$self->stash(simple=>$simple);
+	$self->stash(topreport=>$topreport);
+	$self->stash(plotdata=>$plotdata);
+	$self->render('index');
+	
+} => 'index';
+
+
+
+app->start;
+
+__DATA__
+
+<%# --------------------------------------------------------- %>
+@@ index.html.ep
+% layout 'main';
+
+
+% if ($simple == 1) {
+	<div class="row">
+		<div class="span12">
+			<%= include 'top_report' %>
+		</div>
+	</div>
+	<div class="row">
+		<div class="span12">
+			<%= include 'charts' %>
+		</div>
+	</div>
+	% $simple = 0;
+% } else {
+	<div class="row">
+		<div class="span6 offset5">
+			<%= include 'top' %>
+		</div>
+	</div>
+	<div class="row">
+		<div class="span2">
+			<%= include 'left_packages' %>
+		</div>
+		<div class="span8 offset1">
+			<%= include 'short_report' %>
+		</div>
+	</div>
+	<div class="row">
+		<div class="span2">
+			<%# = include 'left_testsuites' %>
+		</div>
+		<div class="span9 offset1">
+			<%= include 'errors_report' %>
+		</div>
+	</div>
+% }
+
+<%# -------------------------- %>
+@@ top_report.html.ep
+
+
+<table class="table table-condensed table-bordered">
+<thead>
+	<tr>
+	<th>
+		Project:
+	</th>
+	<th>
+		Build Name:
+	</th>
+	<th>
+		Date:
+	</th>
+	<th>
+		Testcases, count:
+	</th>
+	<th>
+		Failed, count:
+	</th>
+	<th>
+		Success ratio, %:
+	</th>
+	<th>
+		Time, s:
+	</th>
+</thead>
+<tbody>
+
+my $buildname;
+my $package;
+
+% for (my $i=0; $i <= $#{$topreport}; $i++) {
+	<tr>
+		<td>
+			% my $package = $topreport->[$i];
+			<a href="<%= url_for('index')->query( package => $package, testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report ) %>"> <%= $package %> </a>
+			% undef $package;
+		</td>
+		% $i++;
+		<td>
+			% my $buildname = $topreport->[$i];
+			<a href="<%= url_for('index')->query( package => $package, testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %>"> <%= $buildname %> </a>
+			% undef $buildname;
+		</td>
+		% $i++;
+		<td>
+			%#  Date
+			<%= $topreport->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			% my $testcases = $topreport->[$i];
+			<%= $topreport->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			% my $failures = $topreport->[$i];
+			<%= $topreport->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			%= sprintf ("%.1f", ($testcases-$failures)/$testcases*100);
+		</td>
+		<td>
+			%= sprintf ("%.3f", $topreport->[$i]) 
+		</td>
+				
+	</tr>
+
+% }
+
+
+
+
+<%# --------------------------------------------------------- %>
+@@ top.html.ep
+<form name="SelectDate" action="<%= url_for 'index' %>" method="GET" class="well form-inline">
+<input type="hidden" name="testsuite" value="<%= $testsuite %>">
+<input type="hidden" name="package" value="<%= $package %>">
+<input type="hidden" name="failure" value="<%= $failure %>">
+<input type="hidden" name="report" value="<%= $report %>">
+<input type="hidden" name="buildname" value="<%= $buildname %>">
+Select date between <%= $dates->[0] %> and <%= $dates->[1] %>:<br>
+
+<input class="input-small" name="startdate" type="text" id="from" size=25> -
+<input class="input-small" name="enddate" type="text" id="to" size=25>
+<button type="submit" class="btn">set dates range</button>
+<br>Current Date Range: <b><%= $startdate %></b> and <b><%= $enddate %></b>
+</form>
+
+
+
+<%# --------------------------------------------------------- %>
+@@ left_packages.html.ep
+
+Packages:<br>
+<ul>
+% foreach my $a (@$pack) {
+	<li><a href="<%= url_for('index')->query( package => $a->[0], testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %> ">
+	% if ($a->[0] eq $package) {
+		<b> <%= $a->[0] %> </b>
+		% } else {
+			<%= $a->[0] %>
+		% }
+		</a></li>
+% }
+</ul>
+
+
+<%# --------------------------------------------------------- %>
+@@ left_testsuites.html.ep
+
+Testsuites:<br>
+<ul>
+% foreach my $a (@$testsuites) {
+	<li><a href="<%= url_for('index')->query( package => $package, testsuite => $a->[0], startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %> ">
+	% if ($a->[0] eq $testsuite) {
+		<b> <%= $a->[0] %> </b>
+		% } else {
+			<%= $a->[0] %>
+		% }
+		</a></li>
+% }
+</ul>
+<br>
+<a href="<%= url_for('index')->query( package => $package, testsuite => '', startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %> " class="btn btn-mini btn-primary">
+<b>RESET ACTIVE TESTSUITE</b></a>
+
+
+
+
+
+
+
+<%# --------------------------------------------------------- %>
+@@ short_report.html.ep
+
+
+
+<table class="table table-condensed table-bordered">
+<thead>
+	<tr>
+	<th>
+		Build Name:
+	</th>
+	<th>
+		Date:
+	</th>
+	<th>
+		Testcases, count:
+	</th>
+	<th>
+		Failed, count:
+	</th>
+	<th>
+		Time, ms:
+	</th>
+	<th>
+		Del?
+	</th>
+	</tr>
+</thead>
+<tbody>
+
+
+
+% for (my $i=0; $i <= $#{$resshort}; $i++) {
+	% my $id = int(10000+rand(100));
+	<tr>
+		<td>
+			% my $buildnum_l = $resshort->[$i];
+			<a href="<%= url_for('index')->query( package => $package, testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildnum_l ) %>"> <%= $buildnum_l %> </a>
+			% if ( ($#{$resshort} < 5 ) && ($startdate ne $enddate) ) { 
+				<a class="btn btn-danger btn-mini" href="<%= url_for('index')->query( package => $package, testsuite => '', startdate => $startdate, enddate => $enddate, report => $report, buildname => '' ) %>">
+				<i class="icon-filter"></i></a>
+			% } 
+		</td>
+		% $i++;
+		<td>
+			<%= $resshort->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			<%= $resshort->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			<%= $resshort->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			%= sprintf ("%.3f", $resshort->[$i]) 
+			
+		</td>
+		<td>
+		
+			<div class="modal hide fade" id="<%= $id %>">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h3>Really delete?</h3>
+							</div>
+								<div class="modal-body" style="text-align: center;">
+									Do you really want to delete a results of <%= $buildnum_l %> build?
+								</div>
+
+							<div class="modal-footer">
+						<a href="<%= url_for('index')->query( package => $package, testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildnum_l, delete => 1) %>" class="btn btn-danger" >Yes, delete it</a>
+						<a href="#" class="btn btn-success" data-dismiss="modal">No, Thanks</a>
+					</div>
+				</div>
+			<a class="btn  btn-primary btn-mini" data-toggle="modal" href="#<%= $id %>">Delete</a>
+				
+		</td>
+		
+	</tr>
+
+% }
+
+
+</tbody>
+</table>
+<div class="row">
+	<div class="span8">
+	Statistic collected by package: <b>
+		% if ($package ne '' ) {
+			<%= $package %>
+		% } else {
+			!ALL
+		% }
+		</b> and testsuite: <b>
+		%if ($testsuite ne '' ) {
+			<%= $testsuite %>
+		% } else {
+			!ALL
+		% }
+		</b>
+	</div>
+	% if ( ($#{$resshort} < 5 )  ) { 
+			
+		<div class="span3 offset6">
+			<a id="show_hide_noerrors" href="#" class="btn">Hide passed testcases</a>
+		</div>
+	% } 
+</div>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+var filter = 0;
+
+$("#show_hide_noerrors").live( "click", function(event) {
+    event.preventDefault();
+    $('#show_hide_noerrors').html('...');
+    if (filter == 1) {
+        $('.no_error').show();
+        filter = 0;
+        $('#show_hide_noerrors').html('Hide passed testcases');
+    }
+    else {
+    	$('.no_error').hide();
+        filter = 1;
+        $('#show_hide_noerrors').html('Show passed testcases');
+    }
+});
+
+});
+</script>
+
+<%# ------------------------------ %>
+@@ charts.html.ep
+
+% my @a;
+% my $i=0;
+% my $j =0;
+% for (my $e=0; $e <= $#{$resshort}; $e++) {
+	% $a[$i][$j] = $resshort->[$e];
+	% if (($e%4 == 0) && ($e > 0)) {
+	% 	$i++;
+	%	$j=0;
+	% } else {
+	% 	$j++;
+	% }
+	
+% }
+
+% my %aa;
+% my $x=0;
+% for (my $count=0; $count <= $#{$resshort}; $count++) {
+	% if (($count == 0) || ($count % 5 == 0)) {
+		% my $name;
+		% $resshort->[$count] =~ /(^\w+)_/;
+		% $name = $1;
+		% push @{$aa{$name}}, {date => $resshort->[++$count], testcases => $resshort->[++$count], failures => $resshort->[++$count]};
+	% }
+% }
+
+<%# == dumper(\%aa) %>
+
+<div class="row">
+<div class="span12" id="charts" ></div>
+	
+		<script type="text/javascript">
+			$(function () {
+			var chart;
+			$(document).ready(function() {
+				chart = new Highcharts.Chart({
+				chart: {
+					renderTo: 'charts',
+					type: 'spline',
+				
+				},
+				title: {
+					text: 'ASF Improvement',
+					x: -20 //center
+				},
+				
+				xAxis: {
+					type: 'datetime',
+					dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+					}
+				},
+				yAxis: {
+					title: {
+						text: 'Success rate, %'
+					},
+					plotLines: [{
+						value: 0,
+						width: 1,
+						color: '#808080'
+					}]
+				},
+				tooltip: {
+					formatter: function() {
+							return '<b>'+ this.series.name +'</b><br/>'+
+							Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y +' %';
+					}
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'top',
+					x: -10,
+					y: 100,
+					borderWidth: 0
+				},
+				series: [
+				
+				% foreach my $build (keys %aa) {
+					{
+					name: ' <%= $build %> ',
+					data: [
+					% foreach my $item (@{$aa{$build}}) {
+						
+						% my $year;
+						% my $month;
+						% my $day;
+						% my $ratio;
+						% $item->{'date'} =~ /(\d{4})-0?(\d{1,2})-0?(\d{1,2})$/;
+						% $year = $1;
+						% $month = $2;
+						% $day = $3;
+						% $ratio = sprintf ("%.1f", ($item->{'testcases'}-$item->{'failures'})/$item->{'testcases'}*100);
+						[Date.UTC(<%= $year %>, <%= $month %>, <%= $day %>), <%= $ratio %> ],
+					% }
+					]
+					},
+				% }
+			
+					
+							
+				]
+			});
+		});
+    
+	});
+	</script>
+
+
+</div>
+<%# --------------------------------------------------------- %>
+@@ errors_report.html.ep
+
+
+
+	% my $id = 0;
+	% my @k = keys(%{$reserr});
+	% my @builds;
+	% my $count_builds;
+		
+	% foreach my $ts_name (keys %{$reserr}) {
+		% foreach my $item (@{$reserr->{$ts_name}}) {
+			% push @builds, $item->{'r_buildname'};
+		% }
+	% }
+	
+	% my %seen;
+	% my @builds1 = grep { ! $seen{ $_ }++ } @builds;
+		
+	
+	% if ($#builds1 == 0) { 
+	
+		% foreach my $ts_name (sort keys %{$reserr}) {
+			% my $error_logs = 0;
+
+			% foreach my $item (@{$reserr->{$ts_name}}) {
+				% if ($item->{'f_cdata'} ne '-') {
+				%	$error_logs++;
+				% }
+			% }
+			% if ($error_logs == 0) {
+				<div class="row no_error">
+					<div class="span8">
+						<br><h4><%= $ts_name %></h4>
+					</div>
+				</div>
+				<div class="row no_error" style="text-align: center;"> <h5>
+					<div class="span2">
+						Build:
+					</div>
+					<%# <div class="span1"> %>
+					<%#	Date:				%>
+					<%# </div>				%>
+					<div class="span4">
+						Testcase name
+					</div>
+
+					<div class="span1">
+						Status:
+					</div>
+					<div class="span2">
+						Log:
+					</div></h5>
+				</div>
+				% } else {
+					<div class="row">
+						<div class="span8">
+							<br><h4><%= $ts_name %></h4>
+						</div>
+					</div>
+				<div class="row" style="text-align: center;"> <h5>
+					<div class="span2">
+						Build:
+					</div>
+					<%# <div class="span1"> %>
+					<%#	Date:				%>
+					<%# </div>				%>
+					<div class="span4">
+						Testcase name:
+					</div>
+
+					<div class="span1">
+						Status:
+					</div>
+					<div class="span2">
+						Log:
+					</div>
+				</div></h5>
+			% }
+
+
+
+				% my $color_id = 0;
+			% foreach my $item (@{$reserr->{$ts_name}}) {
+				% my @colors = ('#E8E8E8', '#E0E0E0');
+				% if ($item->{'f_cdata'} eq '-') {
+					<div class="row no_error" style="background: <%== $colors[$color_id % 2] %> ;">
+				% } else {
+					<div class="row" style="background: <%== $colors[$color_id % 2] %> ;">
+				% }
+				% $color_id++;
+					<div class="span2" style="word-break:break-all;">
+						<%= $item->{'r_buildname'} %>
+					</div>
+	<%#				<div class="span1"> %>
+						<%# = $item->{'r_date'} %>  
+	<%#				</div> %>
+					<div class="span4">
+						<%= $item->{'tc_name'} %>
+					</div>
+					<div class="span1" style="text-align: center;">
+						<%# $item->{'f_type'} %>
+						<b>
+						% if ($item->{'f_type'} eq '') {
+							<div style="color: #4CBB17; ">
+								PASSED
+							</div>
+						% } else {
+							<div style="color: #EE2C2C; ">
+								FAILED
+							</div>
+						% }
+						</b>
+					</div>
+					% if ($item->{'f_cdata'} ne '-') {
+					<%# my $id = $ts_name; %>
+					<%# $id =~ s/ /_/g; %>
+
+					<div class="span2" style="text-align: center;">
+						<div class="modal hide fade" id="<%= $id %>">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h3>Error Log</h3>
+							</div>
+
+								<div class="modal-body" style="text-align: left;">
+									<%== $item->{'f_cdata'} %>
+								</div>
+
+							<div class="modal-footer">
+								<a href="#" class="btn btn-success" data-dismiss="modal">Close</a>
+							</div>
+						</div>
+						<a class="btn  btn-primary btn-mini" data-toggle="modal" href="#<%= $id %>">View Log</a>
+					</div>
+					% }
+				</div>
+			% }
+
+			% $id++;
+		% }
+	% } 
+
+
+
+<%# --------------------------------------------------------- %>
+@@ form.html.ep
+
+<form name="myform" action="<%= url_for 'report' %>" method="POST">
+
+Select a project:
+
+<select name="package">
+
+% foreach my $a (@$pack) {
+	<option value="<%= $a->[0] %>"><%= $a->[0] %></option>
+% }
+</select></p>
+
+Enter date between <%= $startdate %> and <%= $enddate %>:
+<input name="userdate" type="text" size=25 value="2012-05-18">
+
+<input type="submit" value="send">
+
+</form>
+
+
+
+
+
+<%# --------------------------------------------------------- %>
+@@ error.html.ep
+% layout 'main';
+
+
+<h1> You input wrong date </h1>
+<br>
+<a href="<%= url_for '/' %>"> Click here for return to start page</a>
+
+
+
+
+<%# --------------------------------------------------------- %>
+@@ layouts/main.html.ep
+<!DOCTYPE html>
+<html>
+  <head>
+  <title><%= title %></title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="public/css/bootstrap.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="public/css/bootstrap-responsive.min.css" media="all" />
+  <link href="public/css/pepper-grinder/jquery-ui-1.8.21.custom.css" rel="stylesheet">
+  <script type="text/javascript" src="public/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="public/js/highcharts.js"></script>
+  <script type="text/javascript" src="public/js/modules/exporting.js"></script>
+  <script type="text/javascript" src="public/js/jquery-ui-1.8.21.custom.min.js"></script>
+  <script type="text/javascript" src="public/js/bootstrap.min.js"></script>
+  <script>
+	$(function() {
+		$( "#from" ).datepicker({
+
+			changeMonth: true,
+			numberOfMonths: 1,
+			dateFormat: "yy-mm-dd",
+			firstDay: 1,
+			gotoCurrent: true,
+			showAnim: 'slideDown',
+			changeYear: true,
+			onSelect: function( selectedDate ) {
+				$( "#to" ).datepicker( "option", "minDate", selectedDate );
+			}
+		});
+		$( "#to" ).datepicker({
+
+			changeMonth: true,
+			numberOfMonths: 1,
+			dateFormat: "yy-mm-dd",
+			firstDay: 1,
+			gotoCurrent: true,
+			showAnim: 'slideDown',
+			changeYear: true,
+			onSelect: function( selectedDate ) {
+				$( "#from" ).datepicker( "option", "maxDate", selectedDate );
+			}
+		});
+	});
+	</script>
+	<style type="text/css">
+		html { overflow-y: scroll; }
+		pre {
+ 			 	overflow: auto;
+  				word-wrap: normal;
+  				white-space: pre;
+			}
+		.modal pre {
+				max-height: 320px;
+			}
+		.modal {
+			left: 35%;
+			width: 950px;
+		}
+
+	</style>
+
+ </head>
+ <body>
+	<div class="container">
+	<div class="row" style="margin-bottom: 10px">
+		<div class="span12">
+			<a href="/asf_testing/"><img src="/logo.gif" style="border: 0px" alt="Alstom ASF test framework" /></a>
+		</div>
+	</div>
+	<div class="row" style="margin-bottom: 10px">
+		<div class="span12">
+			<h2> <span class="hhead">ASF Testing report framework</span></h2>
+		</div>
+
+	</div>
+
+
+  <%= content %>
+
+	</div> <!-- conteiner -->
+
+
+
+
+
+
+  </body>
+</html>

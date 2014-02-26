@@ -1,0 +1,80 @@
+<div class="modal hide fade" id="help">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h3>Help</h3>
+				</div>
+				<div class="modal-body">
+					<h3>What is it?</h3>
+					This is a report framework for analysis of ASF Components testing. Usage this reporting tool to get information about any build in table format.
+					
+					<h3>How to use.</h3>
+					<h4>Start Page.</h4>
+					<p>Overview of Main page is shown on image below:<br>
+					<img src="Component0.jpg" class="img-rounded"></br>
+					
+					<p>The start page shows a table with statictic for last builds for every component with last start date, total amount of testcases, failed testcases, success ratio in percent and execution time.
+					In the bottom of the page is shown a chart with success rate per Component in last 30 days.</p>
+					
+					<p>In the column named "Component" are laced ASF Components. Click on it to get the page with detaled report.<br>
+					<img src="Component1.jpg" class="img-rounded"><br>
+					In the column named "Last Build Name" is placed last tested build of current ASF Component. Click on it to get the page with detaled report of this build.<br>
+					<img src="Component2.jpg" class="img-rounded"><br></p>
+					
+					<h4>Detailed Report.</h4>
+					<p>Overview of Detailed report is shown on image below:<br>
+					<img src="Component3.jpg" class="img-rounded"><br>
+					On this page you can select a Component, Date range, build name and delete the result of testing build. 
+					</p>
+					
+					<p>When you select a Build you will get the build error report. See image below:<br>
+					<img src="Component4.jpg" class="img-rounded"><br>
+					On error report page you can find a statuses of testcases.
+					</p>
+					<p>If error is present - you can click "View Log" button to see what failured.<br>
+					<img src="Component8.jpg" class="img-rounded"><br>
+					</p>
+					
+					<p>For more comfortable use, you can press the "Hide passed testcases" button:<br>
+					<img src="Component6.jpg" class="img-rounded"><br>
+					Press this button again to show all testcases.
+					</p>
+					
+					<p>When you press a button with cone icon near the build name, you will exit from error report:<br>
+					<img src="Component5.jpg" class="img-rounded"><br>
+					</p>
+					
+					<p>
+					When you want to delete a result, you press button "Delete", and you will gey a popup window with confirmation:<br>
+					<img src="Component9.jpg" class="img-rounded"><br>
+					To confirm - click red button "Yes. delete it". If no - click green "No, Thanks" button.<br>
+					If you delete a build - you will be redirected to a main page.<br>
+					</p>
+					
+					<h3>How it works.</h3>
+					Every 15 minutes <abbr title="Alstom Build Framework">Dispatcher</abbr> check for a new build. If any build is present, Dispatcher starts a new test process.
+					The test process contains steps to deploy last build, recreate database for this build and configure a security options for builds. Before deployment, Dispatcher 
+					updates environment with last build of EMP. After all deployment steps, Dispatcher fetch from TFS all test projects and testrun script.
+					<h3>The process of testruns.</h3>
+					The testsrun script make a some checks:
+					<ul>
+					<li>Check check if JBoss is alive</li>
+					<li>Check buildname of deployed component and compare it version in the db</li>
+					<li>Check check if build is accessible via http.</li>
+					</ul>
+					If everething is OK - SoupUI is started.
+					After testing, script parses a <code>report.xml</code> and puts data to the database.
+					
+					The ASF Testing - CI Reports provide a view of statistics of CI in time, shows improvment of ASF Component in chart and useful for builds analysis.
+					
+					
+					
+					
+				</div>
+				
+
+				<div class="modal-footer">
+					
+					
+					<a href="#" class="btn btn-success" data-dismiss="modal">Close</a>
+				</div>
+			</div>

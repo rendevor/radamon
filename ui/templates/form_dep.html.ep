@@ -1,0 +1,38 @@
+
+    <form name="SelectParty" action="<%= url_for '.' %>" method="GET" class="well">
+
+    <input type="hidden" name="sel_party" value="<%= $sel_party %>">
+    <input type="hidden" name="startdate" value="<%= $startdate %>">
+    <input type="hidden" name="enddate" value="<%= $enddate %>">
+    <div class="row">
+        
+    <div class="span6">
+    % foreach my $item (@{$ar_parties}) {
+    <li><a href="<%= url_for('.')->query( sel_party => $item->[0], startdate => $startdate, enddate => $enddate, deputate => $deputate ) %> ">
+	% if ($item->[0] eq $sel_party) {
+		<b> <%= $item->[0] %> </b>
+		% } else {
+			<%= $item->[0] %>
+		% }
+		</a></li>
+    % }
+    </div>
+    <div class="span4">
+        <select name="deputate">
+            % foreach my $item (@{$ar_deputates}) {
+                <option><%=$item->[0]%></option>
+            %}
+        </select>
+
+    </div>
+    
+    <div class="span2">
+        <button type="submit" class="btn">Update</button>
+    </div>
+</div>
+</form>
+
+
+
+
+

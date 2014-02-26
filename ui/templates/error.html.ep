@@ -1,0 +1,11 @@
+% layout 'main';
+
+
+<h1> You input wrong date </h1>
+<br>
+<a href="<%= url_for '/' %>"> Click here for return to start page</a>
+
+
+
+
+<%# --------------------------------------------------------- %>

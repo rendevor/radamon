@@ -1,0 +1,23 @@
+Testsuites:<br>
+<ul>
+% foreach my $a (@$testsuites) {
+	<li><a href="<%= url_for('index')->query( package => $package, testsuite => $a->[0], startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %> ">
+	% if ($a->[0] eq $testsuite) {
+		<b> <%= $a->[0] %> </b>
+		% } else {
+			<%= $a->[0] %>
+		% }
+		</a></li>
+% }
+</ul>
+<br>
+<a href="<%= url_for('index')->query( package => $package, testsuite => '', startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %> " class="btn btn-mini btn-primary">
+<b>RESET ACTIVE TESTSUITE</b></a>
+
+
+
+
+
+
+
+<%# --------------------------------------------------------- %>

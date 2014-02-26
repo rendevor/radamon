@@ -1,0 +1,141 @@
+	% my $id = 0;
+	% my @k = keys(%{$reserr});
+	% my @builds;
+	% my $count_builds;
+		
+	% foreach my $ts_name (keys %{$reserr}) {
+		% foreach my $item (@{$reserr->{$ts_name}}) {
+			% push @builds, $item->{'r_buildname'};
+		% }
+	% }
+	
+	% my %seen;
+	% my @builds1 = grep { ! $seen{ $_ }++ } @builds;
+		
+	
+	% if ($#builds1 == 0) { 
+	
+		% foreach my $ts_name (sort keys %{$reserr}) {
+			% my $error_logs = 0;
+
+			% foreach my $item (@{$reserr->{$ts_name}}) {
+				% if ($item->{'f_cdata'} ne '-') {
+				%	$error_logs++;
+				% }
+			% }
+			% if ($error_logs == 0) {
+				<div class="row no_error">
+					<div class="span8">
+						<br><h4><%= $ts_name %></h4>
+					</div>
+				</div>
+				<div class="row no_error" style="text-align: center;"> <h5>
+					<div class="span2">
+						Build:
+					</div>
+					<%# <div class="span1"> %>
+					<%#	Date:				%>
+					<%# </div>				%>
+					<div class="span4">
+						Testcase name
+					</div>
+
+					<div class="span1">
+						Status:
+					</div>
+					<div class="span2">
+						Log:
+					</div></h5>
+				</div>
+				% } else {
+					<div class="row">
+						<div class="span8">
+							<br><h4><%= $ts_name %></h4>
+						</div>
+					</div>
+				<div class="row" style="text-align: center;"> <h5>
+					<div class="span2">
+						Build:
+					</div>
+					<%# <div class="span1"> %>
+					<%#	Date:				%>
+					<%# </div>				%>
+					<div class="span4">
+						Testcase name:
+					</div>
+
+					<div class="span1">
+						Status:
+					</div>
+					<div class="span2">
+						Log:
+					</div>
+				</div></h5>
+			% }
+
+
+
+				% my $color_id = 0;
+			% foreach my $item (@{$reserr->{$ts_name}}) {
+				% my @colors = ('#E8E8E8', '#E0E0E0');
+				% if ($item->{'f_cdata'} eq '-') {
+					<div class="row no_error" style="background: <%== $colors[$color_id % 2] %> ;">
+				% } else {
+					<div class="row" style="background: <%== $colors[$color_id % 2] %> ;">
+				% }
+				% $color_id++;
+					<div class="span2" style="word-break:break-all;">
+						<%= $item->{'r_buildname'} %>
+					</div>
+	<%#				<div class="span1"> %>
+						<%# = $item->{'r_date'} %>  
+	<%#				</div> %>
+					<div class="span4">
+						<%= $item->{'tc_name'} %>
+					</div>
+					<div class="span1" style="text-align: center;">
+						<%# $item->{'f_type'} %>
+						<b>
+						% if ($item->{'f_type'} eq '') {
+							<div style="color: #4CBB17; ">
+								PASSED
+							</div>
+						% } else {
+							<div style="color: #EE2C2C; ">
+								FAILED
+							</div>
+						% }
+						</b>
+					</div>
+					% if ($item->{'f_cdata'} ne '-') {
+					<%# my $id = $ts_name; %>
+					<%# $id =~ s/ /_/g; %>
+
+					<div class="span2" style="text-align: center;">
+						<div class="modal hide fade" id="<%= $id %>">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h3>Error Log</h3>
+							</div>
+
+								<div class="modal-body" style="text-align: left;">
+									<%== $item->{'f_cdata'} %>
+								</div>
+
+							<div class="modal-footer">
+								<a href="#" class="btn btn-success" data-dismiss="modal">Close</a>
+							</div>
+						</div>
+						<a class="btn  btn-primary btn-mini" data-toggle="modal" href="#<%= $id %>">View Log</a>
+					</div>
+					% }
+				</div>
+			% }
+
+			% $id++;
+		% }
+	% } 
+
+
+
+<%# --------------------------------------------------------- %>

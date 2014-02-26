@@ -1,0 +1,40 @@
+% layout 'main';
+
+
+% if ($simple == 1) {
+	<div class="row"> 
+		<div class="span12"> 
+			<%= include 'top_report' %>
+		</div>
+	</div>
+	<div class="row">
+		<div class="span12">
+			<%= include 'charts' %>
+		</div>
+	</div>
+	% $simple = 0;
+% } else {
+	<div class="row">
+		<div class="span6 offset5">
+			<%= include 'top' %>
+		</div>
+	</div>
+	<div class="row">
+		<div class="span2">
+			<%= include 'left_packages' %>
+		</div>
+		<div class="span8 offset1">
+			<%= include 'short_report' %>
+		</div>
+	</div>
+	<div class="row">
+		<div class="span2">
+			<%# = include 'left_testsuites' %>
+		</div>
+		<div class="span9 offset1">
+			<%= include 'errors_report' %>
+		</div>
+	</div>
+% }
+
+<%# -------------------------- %>

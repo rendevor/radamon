@@ -1,0 +1,87 @@
+
+<div class="row">
+<div class="span12" id="charts_reg" ></div>
+	
+		<script type="text/javascript">
+			$(function () {
+			var chart;
+			$(document).ready(function() {
+				chart = new Highcharts.Chart({
+				chart: {
+					renderTo: 'charts_reg',
+					type: 'spline',
+				
+				},
+				title: {
+					text: 'Реєстрація <%= $deputate %> ',
+					x: -20 //center
+				},
+				
+				xAxis: {
+					type: 'datetime',
+					dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+					}
+				},
+				yAxis: {
+					title: {
+						text: 'Присутній чи відсутній'
+					},
+					plotLines: [{
+						value: 0,
+						width: 1,
+						color: '#808080'
+					}]
+				},
+				tooltip: {
+					formatter: function() {
+							return '<b>'+ this.series.name +'</b><br/>'+
+							Highcharts.dateFormat('%e. %b', this.x) +': '+ ((this.y == 1) ? 'Присутній' : 'Відсутній' ) +' ';
+					}
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'top',
+					x: -10,
+					y: 20,
+					borderWidth: 0
+				},
+				series: [
+				
+				
+				
+				% foreach my $party (keys %{$plotdata}) {
+					{
+					name: '<%= $party %>' ,
+					data: [
+					% foreach my $item (@{$plotdata->{$party}}) {
+						
+						% my $year;
+						% my $month;
+						% my $day;
+						% my $ratio;
+						% $item->{'date'} =~ /(\d{4})-0?(\d{1,2})-0?(\d{1,2})$/;
+						% $year = $1;
+						% $month = $2-1;
+						% $day = $3;
+					
+						[Date.UTC(<%= $year %>, <%= $month %>, <%= $day %>), <%= $item->{'status'} %> ],
+					% }
+					]
+					},
+				% }
+			
+					
+							
+				]
+			});
+		});
+    
+	});
+	</script>
+
+
+</div>
+<%# --------------------------------------------------------- %>

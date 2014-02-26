@@ -1,0 +1,19 @@
+<form name="SelectDate"  method="GET" class="well form-inline">
+
+
+    <input type="hidden" name="sel_party" value="<%= $sel_party %>">
+    <input type="hidden" name="deputate" value="<%= $deputate %>">
+    
+
+Select date between <%= $startdate %> and <%= $enddate %>:<br>
+
+<input class="input-small" name="startdate" type="text" id="from" size=25> -
+<input class="input-small" name="enddate" type="text" id="to" size=25>
+<button type="submit" class="btn">set dates range</button>
+<br>Current Date Range: <b><%= $startdate %></b> and <b><%= $enddate %></b>
+</form>
+
+
+
+
+<%# --------------------------------------------------------- %>

@@ -1,0 +1,86 @@
+
+<div class="row">
+<div class="span12" id="charts3" ></div>
+	
+		<script type="text/javascript">
+			$(function () {
+			var chart;
+			$(document).ready(function() {
+				chart = new Highcharts.Chart({
+				chart: {
+					renderTo: 'charts3',
+					type: 'spline',
+				
+				},
+				title: {
+					text: 'Ефективність роботи партії',
+					x: -20 //center
+				},
+				
+				xAxis: {
+					type: 'datetime',
+					dateTimeLabelFormats: { // don't display the dummy year
+                    month: '%e. %b',
+                    year: '%b'
+					}
+				},
+				yAxis: {
+					title: {
+						text: '%'
+					},
+					plotLines: [{
+						value: 0,
+						width: 1,
+						color: '#808080'
+					}]
+				},
+				tooltip: {
+					formatter: function() {
+							return '<b>'+ this.series.name +'</b><br/>'+
+							Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y +' ';
+					}
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'top',
+					x: -10,
+					y: 20,
+					borderWidth: 0
+				},
+				series: [
+				
+				
+				
+				% foreach my $party (keys %{$plotdata3}) {
+					{
+					name: ' <%= $party %> ',
+					data: [
+					% foreach my $item (@{$plotdata3->{$party}}) {
+						
+						% my $year;
+						% my $month;
+						% my $day;
+						% my $ratio;
+						% $item->{'date'} =~ /(\d{4})-0?(\d{1,2})-0?(\d{1,2})$/;
+						% $year = $1;
+						% $month = $2-1;
+						% $day = $3;
+						[Date.UTC(<%= $year %>, <%= $month %>, <%= $day %>), <%= $item->{'ratio'} %> ],
+					% }
+					]
+					},
+				% }
+			
+					
+							
+				]
+			});
+		});
+    
+	});
+	</script>
+
+
+</div>
+<%# --------------------------------------------------------- %>

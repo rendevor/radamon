@@ -1,0 +1,23 @@
+<form name="myform" action="<%= url_for 'report' %>" method="POST">
+
+Select a project:
+
+<select name="package">
+
+% foreach my $a (@$pack) {
+	<option value="<%= $a->[0] %>"><%= $a->[0] %></option>
+% }
+</select></p>
+
+Enter date between <%= $startdate %> and <%= $enddate %>:
+<input name="userdate" type="text" size=25 value="2012-05-18">
+
+<input type="submit" value="send">
+
+</form>
+
+
+
+
+
+<%# --------------------------------------------------------- %>

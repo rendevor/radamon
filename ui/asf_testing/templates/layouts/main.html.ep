@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title><%= title %></title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="public/css/bootstrap.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="public/css/bootstrap-responsive.min.css" media="all" />
+  <link href="public/css/pepper-grinder/jquery-ui-1.8.21.custom.css" rel="stylesheet">
+  <script type="text/javascript" src="public/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="public/js/highcharts.js"></script>
+  <script type="text/javascript" src="public/js/modules/exporting.js"></script>
+  <script type="text/javascript" src="public/js/jquery-ui-1.8.21.custom.min.js"></script>
+  <script type="text/javascript" src="public/js/bootstrap.min.js"></script>
+  <script>
+	$(function() {
+		$( "#from" ).datepicker({
+
+			changeMonth: true,
+			numberOfMonths: 1,
+			dateFormat: "yy-mm-dd",
+			firstDay: 1,
+			gotoCurrent: true,
+			showAnim: 'slideDown',
+			changeYear: true,
+			onSelect: function( selectedDate ) {
+				$( "#to" ).datepicker( "option", "minDate", selectedDate );
+			}
+		});
+		$( "#to" ).datepicker({
+
+			changeMonth: true,
+			numberOfMonths: 1,
+			dateFormat: "yy-mm-dd",
+			firstDay: 1,
+			gotoCurrent: true,
+			showAnim: 'slideDown',
+			changeYear: true,
+			onSelect: function( selectedDate ) {
+				$( "#from" ).datepicker( "option", "maxDate", selectedDate );
+			}
+		});
+	});
+	</script>
+	<style type="text/css">
+		html { overflow-y: scroll; }
+		pre {
+ 			 	overflow: auto;
+  				word-wrap: normal;
+  				white-space: pre;
+			}
+		.modal pre {
+				max-height: 320px;
+			}
+		.modal {
+			left: 35%;
+			width: 950px;
+		}
+
+	</style>
+
+ </head>
+ <body>
+	<div class="container">
+	<div class="row" style="margin-bottom: 10px">
+		<div class="span10">
+			<a href="/asf_testing/"><img src="/logo.gif" style="border: 0px" alt="Alstom ASF test framework" /></a>
+		</div>
+		<div class="span12 offset11">
+			<%= include 'help' %>
+			<a class="btn  default btn-mini" data-toggle="modal" href="#help"><i class="icon-question-sign"></i></a>
+		</div>
+	</div>
+	<div class="row" style="margin-bottom: 10px">
+		<div class="span12">
+			<h2> <span class="head">ASF Testing - CI Reports</span></h2>
+		</div>
+
+	</div>
+
+
+  <%= content %>
+
+	</div> <!-- conteiner -->
+
+
+
+
+
+
+  </body>
+</html>

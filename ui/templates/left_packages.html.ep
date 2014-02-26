@@ -1,0 +1,15 @@
+Packages:<br>
+<ul>
+% foreach my $a (@$pack) {
+	<li><a href="<%= url_for('index')->query( package => $a->[0], testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %> ">
+	% if ($a->[0] eq $package) {
+		<b> <%= $a->[0] %> </b>
+		% } else {
+			<%= $a->[0] %>
+		% }
+		</a></li>
+% }
+</ul>
+
+
+<%# --------------------------------------------------------- %>

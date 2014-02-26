@@ -4,14 +4,14 @@
   <title><%= title %></title>
   <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="public/css/bootstrap.css" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="public/css/bootstrap-responsive.min.css" media="all" />
-  <link href="public/css/pepper-grinder/jquery-ui-1.8.21.custom.css" rel="stylesheet">
-  <script type="text/javascript" src="public/js/jquery-1.7.2.min.js"></script>
-  <script type="text/javascript" src="public/js/highcharts.js"></script>
-  <script type="text/javascript" src="public/js/modules/exporting.js"></script>
-  <script type="text/javascript" src="public/js/jquery-ui-1.8.21.custom.min.js"></script>
-  <script type="text/javascript" src="public/js/bootstrap.min.js"></script>
+  <link href="/public/css/bootstrap.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/public/css/bootstrap-responsive.min.css" media="all" />
+  <link href="/public/css/pepper-grinder/jquery-ui-1.8.21.custom.css" rel="stylesheet">
+  <script type="text/javascript" src="/public/js/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript" src="/public/js/highcharts.js"></script>
+  <script type="text/javascript" src="/public/js/modules/exporting.js"></script>
+  <script type="text/javascript" src="/public/js/jquery-ui-1.8.21.custom.min.js"></script>
+  <script type="text/javascript" src="/public/js/bootstrap.min.js"></script>
   <script>
 	$(function() {
 		$( "#from" ).datepicker({
@@ -62,61 +62,26 @@
  </head>
  <body>
 	<div class="container">
-	<div class="row" style="margin-bottom: 10px">
-	  <div class="span4" id="parties">
-	  <script type="text/javascript">
-$(function () {
-    var chart;
-    $(document).ready(function() {
-        chart = new Highcharts.Chart({
-            chart: {
-                renderTo: 'parties',
-                plotBackgroundColor: null,
-                plotBorderWidth: null,
-                plotShadow: false
-            },
-            title: {
-                text: 'Процентное распределение партий в верховной раде'
-            },
-            tooltip: {
-                pointFormat: '{series.name}: <b>{point.percentage} %</b>',
-                percentageDecimals: 2
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        color: '#000000',
-                        connectorColor: '#000000',
-                        formatter: function() {
-                            return '<b>'+ this.point.name +'</b>: '+ this.percentage.toFixed(2) +' %';
-                        },
-                        percentageDecimals: 2
-                    }
-                }
-            },
-            series: [{
-                type: 'pie',
-                name: 'Процент партий',
-                data: [
 
-                     % foreach my $key (keys %{$parties}) {
-                        ['<%= $key %>', <%= $parties->{$key} %> ],
-                     % }
+	<div class="row">
+	<%= include 'form' %>
+
+</div>
 
 
-                ]
-            }]
-        });
-    });
-
-});
-        </script>
-	  </div>>
-
+<div class="row">
+	<div class="span2">
+		<a href="/">Партії</a>
 	</div>
+	<div class="span2">
+		<a href="/deputates/">Депутати</a>
+	</div>
+	<div class="span2">
+		<a href="/registrations/">Реєстрації</a>
+	</div>
+
+
+</div>
 
 
   <%= content %>

@@ -1,0 +1,73 @@
+<table class="table table-condensed table-bordered">
+<thead>
+	<tr>
+	<th>
+		Component:
+	</th>
+	<th>
+		Last Build Name:
+	</th>
+	<th>
+		Date:
+	</th>
+	<th>
+		Testcases, count:
+	</th>
+	<th>
+		Failed, count:
+	</th>
+	<th>
+		Success ratio, %:
+	</th>
+	<th>
+		Time, s:
+	</th>
+</thead>
+<tbody>
+
+
+
+% for (my $i=0; $i <= $#{$topreport}; $i++) {
+	<tr>
+		<td>
+			% my $package = $topreport->[$i];
+			<a href="<%= url_for('index')->query( package => $package, testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report ) %>"> <%= $package %> </a>
+			% undef $package;
+		</td>
+		% $i++;
+		<td>
+			% my $buildname = $topreport->[$i];
+			<a href="<%= url_for('index')->query( package => $package, testsuite => $testsuite, startdate => $startdate, enddate => $enddate, report => $report, buildname => $buildname ) %>"> <%= $buildname %> </a>
+			% undef $buildname;
+		</td>
+		% $i++;
+		<td>
+			%#  Date
+			<%= $topreport->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			% my $testcases = $topreport->[$i];
+			<%= $topreport->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			% my $failures = $topreport->[$i];
+			<%= $topreport->[$i] %>
+		</td>
+		% $i++;
+		<td>
+			%= sprintf ("%.3f", ($testcases-$failures)/$testcases*100);
+		</td>
+		<td>
+			%= sprintf ("%.3f", $topreport->[$i]) 
+		</td>
+				
+	</tr>
+
+% }
+</tbody>
+
+</table>
+
+<%# --------------------------------------------------------- %>
